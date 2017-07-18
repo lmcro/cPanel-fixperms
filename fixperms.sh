@@ -1,27 +1,9 @@
 #! /bin/bash
-#
-# Date: Jan 26th 2012
-# Author: Colin R.
-# Revisions: Jacob "Boom Shadow" Tirey (boomshadow.net)
-# Revisions: Will Ashworth (williamashworth.com || ashworthconsulting.com)
-# Fixperms script for ServInt
-#
+# 
+# License: GNU General Public License v3.0
+# See the Github page for full license and notes:
 # https://github.com/PeachFlame/cPanel-fixperms
 #
-#   Fixperms script for cPanel servers running suPHP or FastCGI.
-#   Written for ServInt.net
-#   Copyright (C) 2012 Colin R.
-#
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
-#
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#   GNU General Public License for more details. http://www.gnu.org/licenses/
-
 
 # Set verbose to null
 verbose=""
@@ -104,25 +86,25 @@ fixperms () {
     echo "------------------------"
     tput setaf 4
     echo "Fixing any domains with a document root outside of public_html...."
-    for SUBDOMAIN in $(grep -i document /var/cpanel/userdata/$account/* | awk '{print $2}' | grep home | grep -v public_html)
+    for SUBDOMAIN in $(grep -i documentroot /var/cpanel/userdata/$account/* | grep -v '.cache\|_SSL' | awk '{print $2}' | grep -v public_html)
     do
-  tput bold
-  tput setaf 4
-  echo "Fixing sub/addon domain document root $SUBDOMAIN...."
-  tput sgr0
-  find $SUBDOMAIN -type d -exec chmod $verbose 755 {} \;
-  find $SUBDOMAIN -type f | xargs -d$'\n' -r chmod $verbose 644
-    find $SUBDOMAIN -name '*.cgi' -o -name '*.pl' | xargs -r chmod $verbose 755
-    chown $verbose -R $account:$account $SUBDOMAIN
-    find $SUBDOMAIN -name .htaccess -exec chown $verbose $account.$account {} \;
+      tput bold
+      tput setaf 4
+      echo "Fixing sub/addon domain document root $SUBDOMAIN...."
+      tput sgr0
+      find $SUBDOMAIN -type d -exec chmod $verbose 755 {} \;
+      find $SUBDOMAIN -type f | xargs -d$'\n' -r chmod $verbose 644
+      find $SUBDOMAIN -name '*.cgi' -o -name '*.pl' | xargs -r chmod $verbose 755
+      chown $verbose -R $account:$account $SUBDOMAIN
+      find $SUBDOMAIN -name .htaccess -exec chown $verbose $account.$account {} \;
     done
 
   #Finished
     tput bold
     tput setaf 3
     echo "Finished!"
-  echo "------------------------"
-  printf "\n\n"
+    echo "------------------------"
+    printf "\n\n"
     tput sgr0
   fi
 
@@ -131,8 +113,7 @@ fixperms () {
 
 #Parses all users through cPanel's users file
 all () {
-    cd /var/cpanel/users
-    for user in *
+    for user in `cat /etc/domainusers | awk '{print $1}' | cut -d: -f1`
     do
   fixperms $user
     done
